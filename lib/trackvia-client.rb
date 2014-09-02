@@ -286,7 +286,9 @@ module Trackvia
     # Creates a new account user, managed by the authenticated account user.  The new user starts
     # at the email verification state.
     #
-    # Use a non-abbreviated timezone value for the time_zone parameter.
+    # The 'time_zone' parameter is a 'tz database' timezone specifier (e.g., Amercia/Denver)
+    #
+    # See http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
     #
     def create_user(email, first_name, last_name, time_zone)
       begin
