@@ -1,10 +1,14 @@
-A Ruby client for accessing your Trackvia application data.
+A Ruby SDK for accessing your Trackvia application data.
+
+## Features
+
+1. Simple client to access the Trackvia API
 
 ## Installation
 
 Add to your application's Gemfile:
 
-  gem 'trackvia-client'
+  gem 'trackvia-api-sdk'
 
 Then execute:
 
@@ -25,15 +29,15 @@ Obtain a 'user_key' by signing up at Trackvia's Developer Portal:
 The client interface is more fully explained in the Ruby Docs and
 integration test hosted on Github.
 
-  http://rubygems.org/gems/trackvia-client
+  http://rubygems.org/gems/trackvia-api-sdk
 
 Source code:
 
-  https://github.com/Trackvia/API-SDK-Ruby
+  https://github.com/Trackvia/API-Ruby-SDK
 
 Direct link to Ruby docs:
 
-  http://rubydoc.info/gems/trackvia-client/0.0.1/frames
+  http://rubydoc.info/gems/trackvia-api-sdk/0.0.1/frames
 
 ### Logging
 

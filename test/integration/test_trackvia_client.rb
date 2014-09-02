@@ -1,10 +1,10 @@
 require 'minitest/autorun'
 require 'minitest/unit'
-require 'trackvia-client'
+require 'trackvia-api-sdk'
 require 'logger'
 require 'tempfile'
 
-# == Integration tests for the Trackvia Client
+# == Integration tests for the Trackvia API SDK
 #
 # Integration tests are dual purpose:
 #

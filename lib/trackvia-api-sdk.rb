@@ -2,9 +2,9 @@ require 'rest_client'
 require 'json'
 require 'logger'
 require 'cgi'
-require 'trackvia-client/exceptions'
+require 'trackvia-api-sdk/exceptions'
 
-# == Trackvia Ruby Client
+# == Trackvia API Ruby SDK
 #
 # Provides access to Trackvia's API (go.api.trackvia.com) for several capabilities, listed below.
 #
@@ -150,8 +150,6 @@ module Trackvia
   $LOG = Logger.new('trackvia_client.log', 7)
 
   class Client
-    VERSION = "0.0.1"
-
     DEFAULT_BASE_PATH = "/"
     DEFAULT_SCHEME = "https"
     DEFAULT_HOST = "go.api.trackvia.com"

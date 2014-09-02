@@ -1,17 +1,17 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'trackvia-client/version'
+require 'trackvia-api-sdk/version'
 
 Gem::Specification.new do |s|
-  s.name            = 'trackvia-client'
-  s.version         = Trackvia::CLIENT_VERSION
-  s.date            = '2014-09-01'
-  s.summary         = "Trackvia's API client"
-  s.description     = "A client to access Trackvia's public API"
-  s.authors         = ["bpmsols"]
+  s.name            = 'trackvia-api-sdk'
+  s.version         = Trackvia::SDK_VERSION
+  s.date            = '2014-09-05'
+  s.summary         = "Trackvia's API SDK"
+  s.description     = "An SDK to access your Trackvia application data"
+  s.authors         = [""]
   s.email           = 'info@trackvia.com'
-  s.homepage        = 'https://github.com/Trackvia/API-SDK-Ruby'
+  s.homepage        = 'https://github.com/Trackvia/API-Ruby-SDK'
   s.license         = 'Apache2'
   s.files           = `git ls-files`.split($\)
   s.executables     = s.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
