@@ -3,24 +3,25 @@ require 'minitest/unit'
 require 'trackvia-api-sdk'
 require 'logger'
 require 'tempfile'
+require 'uri'
 
 # == Integration tests for the Trackvia API SDK
 #
 # Integration tests are dual purpose:
 #
-# 1. Provide documented usage patterns of the client
-# 2. Provide client-library maintainers a set of tests to verify program correctness
+# 1. Provides documented usage patterns of the client
+# 2. Provides client-library maintainers a set of tests to verify program correctness
 #
 # ===Setup before running
 #
-# Being a client to the Trackvia service, it requires a running Trackvia service.
+# Being a client to the Trackvia service, tests require a running Trackvia service.
 #
-# Before running these tests, configure the following:
+# Before running tests, configure the following:
 #
 # 1. Create a Trackvia user/password, authenticated on every test setup.
 # 2. Obtain a 3Scale API user_key, checked on every /openapi endpoint access.
 # 3. Create an "Integration Testing" application in your target Trackvia environment
-# 4. Create a "TestSupport" table named to read/write test records, having these fields:
+# 4. Create a table named "TestSupport" to read/write test records, having these fields:
 #
 #   Field Name       Field Type
 #   ==========       ==========
@@ -36,14 +37,30 @@ require 'tempfile'
 # === Running
 #
 # A Rakefile is provided, with a default task configured to run these integration tests.  However, you will need
-# to export several environment variables before executing rake.
+# to export several environment variables before executing rake.  For example:
 #
 #   export TRACKVIA_USERNAME=tester
 #   export TRACKVIA_PASSWORD=secret
 #   export TRACKVIA_USER_KEY=1234abcd
+#   export TRACKVIA_URI=https://go.trackvia.com:443/
+#
+# These settings accomplish several things:
+#
+#   1. Sets the base service URI to call => https://go.trackvia.com:443/
+#   2. Authenticates using the given username/password credential => tester/secret
+#   3. Passes the API key '1234abcd' on every API call
+#
+# Of course, your username, password and API key will be different values.
+#
+# Once set to good values, run the tests:
+#
 #   rake or rake test:integration
 #
+# Remember:
+#  TRACKVIA_URI has the default value: https://go.trackvia.com:443/
+#  You must provide values for: TRACKVIA_USERNAME, TRACKVIA_PASSWORD, and TRACKVIA_USER_KEY
 #
+
 module Trackvia
   class ClientIntegrationTest < Minitest::Unit::TestCase
     LOG = Logger.new('trackvia_test.log', 1)
@@ -52,18 +69,26 @@ module Trackvia
     # Integration test parameters
     ############################################################################################################
     TEST_VIEW_NAME  =   'Default TestSupport View'
-    TEST_USERNAME   =   ENV['TRACKVIA_USERNAME']
-    TEST_PASSWORD   =   ENV['TRACKVIA_PASSWORD']
-    USER_KEY        =   ENV['TRACKVIA_USER_KEY']
+    TEST_USERNAME   =   ENV['TRACKVIA_USERNAME'] || fail("Set environment variable TRACKVIA_USERNAME first")
+    TEST_PASSWORD   =   ENV['TRACKVIA_PASSWORD'] || fail("Set environment variable TRACKVIA_PASSWORD first")
+    USER_KEY        =   ENV['TRACKVIA_USER_KEY'] || fail("Set environment variable TRACKVIA_USER_KEY first")
+    SERVICE_URI     =   ENV['TRACKVIA_URI'] || 'https://go.trackvia.com:443/'
 
-    ENV_VARS = { 'TEST_USERNAME' => TEST_USERNAME, 'TEST_PASSWORD' => TEST_PASSWORD, 'USER_KEY' => USER_KEY }
+    uri = URI.parse(SERVICE_URI)
+    SCHEME = uri.scheme
+    HOST = uri.host
+    PORT = uri.port
+    BASE_PATH = uri.path
+
+    TEST_ENV = { 'TEST_USERNAME' => TEST_USERNAME, 'TEST_PASSWORD' => TEST_PASSWORD, 'USER_KEY' => USER_KEY,
+                 'SCHEME' => SCHEME, 'HOST' => HOST, 'PORT' => PORT, 'BASE_PATH' => BASE_PATH }
 
     ############################################################################################################
 
     def setup
-      LOG.debug("Test setup.  Authenticating client using => #{ENV_VARS}")
+      LOG.debug("Test environment => #{TEST_ENV}")
 
-      @client = Trackvia::Client.new(scheme: "http", host: "localhost", port: 8080, base_path: "/xvia", user_key: USER_KEY)
+      @client = Trackvia::Client.new(scheme: SCHEME, host: HOST, port: PORT, base_path: BASE_PATH, user_key: USER_KEY)
       @client.authorize(TEST_USERNAME, TEST_PASSWORD)
       view = @client.get_view(TEST_VIEW_NAME)
       @test_view_id = view['id']
