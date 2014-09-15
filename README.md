@@ -22,24 +22,16 @@ Start by trying to authenticate your user and make a simple request:
   @client.authorize('username', 'password')
   apps = @client.getApps
 
-Obtain a 'user_key' by signing up at Trackvia's Developer Portal:
+Obtain a user key by enabling the API at:
 
   https://go.trackvia.com/#/my-info
 
 Note, the API is only available for Enterprise level accounts
 
-The client interface is more fully explained in the Ruby Docs and
-integration test hosted on Github.
-
-  http://rubygems.org/gems/trackvia-api-sdk
-
 Source code:
 
   https://github.com/Trackvia/API-Ruby-SDK
 
-Direct link to Ruby docs:
-
-  http://rubydoc.info/gems/trackvia-api-sdk/0.0.1/frames
 
 ### Logging
 
