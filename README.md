@@ -24,7 +24,9 @@ Start by trying to authenticate your user and make a simple request:
 
 Obtain a 'user_key' by signing up at Trackvia's Developer Portal:
 
-  https://developer.trackvia.com
+  https://go.trackvia.com/#/my-info
+
+Note, the API is only available for Enterprise level accounts
 
 The client interface is more fully explained in the Ruby Docs and
 integration test hosted on Github.
