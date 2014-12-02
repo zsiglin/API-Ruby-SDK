@@ -340,7 +340,7 @@ module Trackvia
         url="#{base_uri}/openapi/views/#{view_id}/view_structure"
 
         json = RestClient.get url,{ :params => auth_params, :accept => :json }
-        strucutre = JSON.parse(json)
+        structure = JSON.parse(json)
 
       rescue RestClient::Exception => e
         retry if maybe_retry_when_bad_auth_token(e)
