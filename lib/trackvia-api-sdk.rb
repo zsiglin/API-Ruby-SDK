@@ -153,7 +153,7 @@ module Trackvia
     DEFAULT_BASE_PATH = "/"
     DEFAULT_SCHEME = "https"
     DEFAULT_HOST = "go.api.trackvia.com"
-    DEFAULT_PORT = 80
+    DEFAULT_PORT = 443 
     OAUTH_CLIENT_ID = "xvia-webapp"
 
     def initialize(scheme: DEFAULT_SCHEME, host: DEFAULT_HOST, port: DEFAULT_PORT, base_path: DEFAULT_BASE_PATH, user_key: '')
@@ -321,11 +321,11 @@ module Trackvia
 
     # Gets an accessible view, managed by the authenticated account user.
     #
-    def get_view(name)
+    def get_view(view_id)
       begin
         url = "#{base_uri}/openapi/views"
 
-        json = RestClient.get url, { :params => auth_params.merge({ 'name' => name }), :accept => :json }
+        json = RestClient.get url, { :params => auth_params.merge({ 'viewId' => view_id }), :accept => :json }
         views = JSON.parse(json)
 
       rescue RestClient::Exception => e
