@@ -335,6 +335,20 @@ module Trackvia
       (views.nil?) ? (nil) : (views.at(0))
     end
 
+    def get_view_structure(view_id)
+      begin
+        url="#{base_uri}/openapi/views/#{view_id}/view_structure"
+
+        json = RestClient.get url,{ :params => auth_params, :accept => :json }
+        strucutre = JSON.parse(json)
+
+      rescue RestClient::Exception => e
+        retry if maybe_retry_when_bad_auth_token(e)
+      end
+
+      (structure.nil?) ? (nil) : (structure.at(0))
+    end
+
     # Gets all accessible views managed by the authenticated account user.
     #
     def get_views
