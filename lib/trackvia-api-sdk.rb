@@ -152,7 +152,7 @@ module Trackvia
   class Client
     DEFAULT_BASE_PATH = "/"
     DEFAULT_SCHEME = "https"
-    DEFAULT_HOST = "go.api.trackvia.com"
+    DEFAULT_HOST = "go.trackvia.com"
     DEFAULT_PORT = 443 
     OAUTH_CLIENT_ID = "xvia-webapp"
 
@@ -426,8 +426,9 @@ module Trackvia
     def create_records(view_id, batch)
       begin
         url = "#{base_uri}/openapi/views/#{view_id}/records?#{encoded_auth_url}"
+        new_records = { "data" => batch }
 
-        json = RestClient.post url, batch.to_json, { :accept => :json, :content_type => :json }
+        json = RestClient.post url, new_records.to_json, { :accept => :json, :content_type => :json }
         records = JSON.parse(json)
 
       rescue RestClient::Exception => e
