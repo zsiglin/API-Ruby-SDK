@@ -147,7 +147,7 @@ require 'trackvia-api-sdk/exceptions'
 #   user = @client.create_user("me@example.com", "Richard", "Moby", "America/Denver")
 #
 module Trackvia
-  $LOG = Logger.new('trackvia_client.log', 7)
+  $LOG = Logger.new('/log/trackvia_client.log', 7)
 
   class Client
     DEFAULT_BASE_PATH = "/"
