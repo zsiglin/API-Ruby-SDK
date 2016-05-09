@@ -2,7 +2,8 @@ require 'rest_client'
 require 'json'
 require 'logger'
 require 'cgi'
-require 'trackvia-api-sdk/exceptions'
+require 'trackvia-api-sdk'
+require 'typhoeus'
 
 # == Trackvia API Ruby SDK
 #
@@ -149,14 +150,41 @@ require 'trackvia-api-sdk/exceptions'
 module Trackvia
   $LOG = Logger.new('log/trackvia_client.log', 7)
 
+  class Queue
+  	attr_accessor :requests
+
+  	def initialize
+  		clear_queue
+  	end
+
+  	def add(options)
+  		request = Typhoeus::Request.new(options[:url], followlocation: true, method: options[:method], params: options[:options][:params])
+  		@hydra.queue(request)
+  		@requests << request
+  	end
+
+  	def run
+  		@hydra.run
+  		responses = @requests.map { |request| JSON.parse(request.response.response_body) }
+  		clear_queue 
+  		
+  		responses
+  	end
+
+  	private
+  		def clear_queue
+  			@hydra = Typhoeus::Hydra.new
+  			@requests = []
+  		end
+  end
+
   class Client
-    DEFAULT_BASE_PATH = "/"
     DEFAULT_SCHEME = "https"
     DEFAULT_HOST = "go.trackvia.com"
     DEFAULT_PORT = 443 
     OAUTH_CLIENT_ID = "xvia-webapp"
 
-    def initialize(scheme: DEFAULT_SCHEME, host: DEFAULT_HOST, port: DEFAULT_PORT, base_path: DEFAULT_BASE_PATH, user_key: '')
+    def initialize(scheme: DEFAULT_SCHEME, host: DEFAULT_HOST, port: DEFAULT_PORT, base_path: '', user_key: '')
       @scheme = scheme
       @host = host
       @port = port
@@ -223,10 +251,9 @@ module Trackvia
     #
     def refresh_token
       raise Trackvia::InvalidRefreshToken('Try authorize() first') if (@refresh_token_value.nil?)
+      url = "#{base_uri}/oauth/token"
 
       begin
-        url = "#{base_uri}/oauth/token"
-
         json = RestClient.get url, { :params => {'client_id' => OAUTH_CLIENT_ID, 'grant_type' => 'refresh_token',
           'refresh_token' => "#{@refresh_token_value}", 'redirect_uri' => ''}, :accept => :json }
         token = JSON.parse(json)
@@ -248,10 +275,9 @@ module Trackvia
       @password = password
       @access_token_value = nil
       @refresh_token_value = nil
+      url = "#{base_uri}/oauth/token"
 
       begin
-        url = "#{base_uri}/oauth/token"
-
         json = RestClient.get url, { :params => {'username' => @username, 'password' => @password,
           'client_id' => OAUTH_CLIENT_ID, 'grant_type' => 'password'}, :accept => :json }
         token = JSON.parse(json)
@@ -266,14 +292,14 @@ module Trackvia
 
     # Gets accessible account users, limited by the given 'start' and 'max' results.
     #
-    def get_users(start: 0, max: 100)
+    def get_users(parallel=false, start=0, max=100)
+    	url = "#{base_uri}/openapi/users"
+    	options = { :params => auth_params.merge({ 'start' => start, 'max' => max }), :accept => :json }
+    	return { :url => url, :options => options } if parallel
+
       begin
-        url = "#{base_uri}/openapi/users"
-
-        json = RestClient.get url , { :params => auth_params.merge({ 'start' => start, 'max' => max }),
-                                      :accept => :json }
-        users = JSON.parse(json)
-
+	      json = RestClient.get url, options
+	      users = JSON.parse(json)
       rescue RestClient::Exception => e
         retry if maybe_retry_when_bad_auth_token(e)
       end
@@ -288,14 +314,15 @@ module Trackvia
     #
     # See http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
     #
-    def create_user(email, first_name, last_name, time_zone)
+    def create_user(email, first_name, last_name, time_zone, parallel=false)
+			url = "#{base_uri}/openapi/users"
+			options = { :params => auth_params.merge({ 'email' => email, 'first_name' => first_name,
+			  'last_name' => last_name, 'time_zone' => time_zone }), :accept => :json }
+			return { :url => url, :options => options } if parallel
+
       begin
-        url = "#{base_uri}/openapi/users"
-
-        json = RestClient.post url, auth_params.merge({ 'email' => email, 'first_name' => first_name,
-          'last_name' => last_name, 'time_zone' => time_zone }), { :accept => :json }
+      	json = RestClient.get url, options
         user = JSON.parse(json)
-
       rescue RestClient::Exception => e
         retry if maybe_retry_when_bad_auth_token(e)
       end
@@ -305,13 +332,14 @@ module Trackvia
 
     # Gets all accessible apps managed by the authenticated account user.
     #
-    def get_apps
+    def get_apps(parallel=false)
+    	url = "#{base_uri}/openapi/apps"
+    	options = { :params => auth_params, :accept => :json }
+    	return { :url => url, :options => options } if parallel
+
       begin
-        url = "#{base_uri}/openapi/apps"
-
-        json = RestClient.get url, { :params => auth_params, :accept => :json }
+        json = RestClient.get url, options
         apps = JSON.parse(json)
-
       rescue RestClient::Exception => e
         retry if maybe_retry_when_bad_auth_token(e)
       end
@@ -321,13 +349,14 @@ module Trackvia
 
     # Gets an accessible view, managed by the authenticated account user.
     #
-    def get_view(view_id)
+    def get_view(view_id, parallel=false)
+    	url = "#{base_uri}/openapi/views"
+    	options = { :params => auth_params.merge({ 'viewId' => view_id }), :accept => :json }
+    	return { :url => url, :options => options } if parallel
+
       begin
-        url = "#{base_uri}/openapi/views"
-
-        json = RestClient.get url, { :params => auth_params.merge({ 'viewId' => view_id }), :accept => :json }
+      	json = RestClient.get url, options
         views = JSON.parse(json)
-
       rescue RestClient::Exception => e
         retry if maybe_retry_when_bad_auth_token(e)
       end
@@ -335,13 +364,14 @@ module Trackvia
       (views.nil?) ? (nil) : (views.at(0))
     end
 
-    def get_view_structure(view_id)
+    def get_view_structure(view_id, parallel=false)
+      url = "#{base_uri}/openapi/views/#{view_id}/view_structure"
+      options = { :params => auth_params, :accept => :json }
+      return { :url => url, :options => options } if parallel
+
       begin
-        url="#{base_uri}/openapi/views/#{view_id}/view_structure"
-
-        json = RestClient.get url,{ :params => auth_params, :accept => :json }
+        json = RestClient.get url, options
         structure = JSON.parse(json)
-
       rescue RestClient::Exception => e
         retry if maybe_retry_when_bad_auth_token(e)
       end
@@ -351,13 +381,14 @@ module Trackvia
 
     # Gets all accessible views managed by the authenticated account user.
     #
-    def get_views
-      begin
-        url = "#{base_uri}/openapi/views"
+    def get_views(parallel=false)
+      url = "#{base_uri}/openapi/views"
+      options = { :params => auth_params, :accept => :json }
+      return { :url => url, :options => options } if parallel
 
-        json = RestClient.get url, { :params => auth_params, :accept => :json }
+      begin       
+        json = RestClient.get url, options
         views = JSON.parse(json)
-
       rescue RestClient::Exception => e
         retry if maybe_retry_when_bad_auth_token(e)
       end
@@ -369,14 +400,14 @@ module Trackvia
     #
     # The 'query_string' parameter is compared to all record fields using a substring match algorithm.
     #
-    def find_records(view_id, query_string, start: 0, max: 100)
+    def find_records(view_id, query_string, parallel=false, start: 0, max: 100)
+    	url = "#{base_uri}/openapi/views/#{view_id}/find"
+    	options = auth_params.merge({ 'q' => query_string, 'start' => start, 'max' => max })
+    	return { :url => url, :options => options } if parallel
+
       begin
-        url = "#{base_uri}/openapi/views/#{view_id}/find"
-
-        json = RestClient.get url, { :params => auth_params.merge({ 'q' => query_string, 'start' => start, 'max' => max }),
-                                     :accept => :json }
+      	json = RestClient.get url, options
         records = JSON.parse(json)
-
       rescue RestClient::Exception => e
         retry if maybe_retry_when_bad_auth_token(e)
       end
@@ -386,13 +417,14 @@ module Trackvia
 
     # Gets all accessible records accessible in the authorized view.
     #
-    def get_records(view_id)
+    def get_records(view_id, parallel=false)
+    	url = "#{base_uri}/openapi/views/#{view_id}"
+    	options = { :params => auth_params, :accept => :json }
+    	return { :url => url, :options => options, :method => "get" } if parallel
+
       begin
-        url = "#{base_uri}/openapi/views/#{view_id}"
-
-        json = RestClient.get url, { :params => auth_params, :accept => :json }
+        json = RestClient.get url, options
         records = JSON.parse(json)
-
       rescue RestClient::Exception => e
         retry if maybe_retry_when_bad_auth_token(e)
       end
@@ -402,17 +434,17 @@ module Trackvia
 
     # Gets an accessible record in the authorized view for a specific record identifier.
     #
-    def get_record(view_id, record_id)
+    def get_record(view_id, record_id, parallel=false)
+    	url = "#{base_uri}/openapi/views/#{view_id}/records/#{record_id}"
+    	options = { :params => auth_params, :accept => :json }
+    	return { :url => url, :options => options } if parallel
+
       begin
-        url = "#{base_uri}/openapi/views/#{view_id}/records/#{record_id}"
-
-        json = RestClient.get url, { :params => auth_params, :accept => :json }
+        json = RestClient.get url, options
         record = JSON.parse(json)
-
       rescue RestClient::ResourceNotFound
         # nothing to do other than return nil
         record = nil
-
       rescue RestClient::Exception => e
         retry if maybe_retry_when_bad_auth_token(e)
       end
