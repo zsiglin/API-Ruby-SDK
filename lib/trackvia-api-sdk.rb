@@ -295,7 +295,7 @@ module Trackvia
     def get_users(parallel=false, start=0, max=100)
     	url = "#{base_uri}/openapi/users"
     	options = { :params => auth_params.merge({ 'start' => start, 'max' => max }), :accept => :json }
-    	return { :url => url, :options => options } if parallel
+    	return { :url => url, :options => options, :method => "get" } if parallel
 
       begin
 	      json = RestClient.get url, options
@@ -318,7 +318,7 @@ module Trackvia
 			url = "#{base_uri}/openapi/users"
 			options = { :params => auth_params.merge({ 'email' => email, 'first_name' => first_name,
 			  'last_name' => last_name, 'time_zone' => time_zone }), :accept => :json }
-			return { :url => url, :options => options } if parallel
+			return { :url => url, :options => options, :method => "get" } if parallel
 
       begin
       	json = RestClient.get url, options
@@ -335,7 +335,7 @@ module Trackvia
     def get_apps(parallel=false)
     	url = "#{base_uri}/openapi/apps"
     	options = { :params => auth_params, :accept => :json }
-    	return { :url => url, :options => options } if parallel
+    	return { :url => url, :options => options, :method => "get" } if parallel
 
       begin
         json = RestClient.get url, options
@@ -352,7 +352,7 @@ module Trackvia
     def get_view(view_id, parallel=false)
     	url = "#{base_uri}/openapi/views"
     	options = { :params => auth_params.merge({ 'viewId' => view_id }), :accept => :json }
-    	return { :url => url, :options => options } if parallel
+    	return { :url => url, :options => options, :method => "get" } if parallel
 
       begin
       	json = RestClient.get url, options
@@ -367,7 +367,7 @@ module Trackvia
     def get_view_structure(view_id, parallel=false)
       url = "#{base_uri}/openapi/views/#{view_id}/view_structure"
       options = { :params => auth_params, :accept => :json }
-      return { :url => url, :options => options } if parallel
+      return { :url => url, :options => options, :method => "get" } if parallel
 
       begin
         json = RestClient.get url, options
@@ -384,7 +384,7 @@ module Trackvia
     def get_views(parallel=false)
       url = "#{base_uri}/openapi/views"
       options = { :params => auth_params, :accept => :json }
-      return { :url => url, :options => options } if parallel
+      return { :url => url, :options => options, :method => "get" } if parallel
 
       begin       
         json = RestClient.get url, options
@@ -403,7 +403,7 @@ module Trackvia
     def find_records(view_id, query_string, parallel=false, start: 0, max: 100)
     	url = "#{base_uri}/openapi/views/#{view_id}/find"
     	options = auth_params.merge({ 'q' => query_string, 'start' => start, 'max' => max })
-    	return { :url => url, :options => options } if parallel
+    	return { :url => url, :options => options, :method => "get" } if parallel
 
       begin
       	json = RestClient.get url, options
@@ -437,7 +437,7 @@ module Trackvia
     def get_record(view_id, record_id, parallel=false)
     	url = "#{base_uri}/openapi/views/#{view_id}/records/#{record_id}"
     	options = { :params => auth_params, :accept => :json }
-    	return { :url => url, :options => options } if parallel
+    	return { :url => url, :options => options, :method => "get" } if parallel
 
       begin
         json = RestClient.get url, options
