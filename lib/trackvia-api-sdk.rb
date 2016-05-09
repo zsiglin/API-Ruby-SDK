@@ -3,7 +3,6 @@ require 'json'
 require 'logger'
 require 'cgi'
 require 'trackvia-api-sdk'
-require 'typhoeus'
 
 # == Trackvia API Ruby SDK
 #
