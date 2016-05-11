@@ -2,7 +2,7 @@ require 'rest_client'
 require 'json'
 require 'logger'
 require 'cgi'
-require 'trackvia-api-sdk'
+require 'trackvia-api-sdk/exceptions'
 require 'typhoeus'
 
 # == Trackvia API Ruby SDK
@@ -402,7 +402,7 @@ module Trackvia
     #
     def find_records(view_id, query_string, parallel=false, start: 0, max: 100)
     	url = "#{base_uri}/openapi/views/#{view_id}/find"
-    	options = auth_params.merge({ 'q' => query_string, 'start' => start, 'max' => max })
+    	options = { :params => auth_params.merge({ 'q' => query_string, 'start' => start, 'max' => max }), :accept => :json }
     	return { :url => url, :options => options, :method => "get" } if parallel
 
       begin
