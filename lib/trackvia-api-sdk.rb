@@ -419,7 +419,7 @@ module Trackvia
     #
     def get_records(view_id, parallel=false, start: 0, max: 1000)
     	url = "#{base_uri}/openapi/views/#{view_id}"
-    	options = { :params => auth_params.merge({ start' => start, 'max' => max }), :accept => :json }
+    	options = { :params => auth_params.merge({ 'start' => start, 'max' => max }), :accept => :json }
     	return { :url => url, :options => options, :method => "get" } if parallel
 
       begin
